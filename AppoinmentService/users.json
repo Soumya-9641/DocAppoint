@@ -1,0 +1,18 @@
+{
+  "a2dde116-f6f4-4379-a069-20d40231eb5b": {
+    "id": "a2dde116-f6f4-4379-a069-20d40231eb5b",
+    "email": "soumyabiltu@gmail.com",
+    "password": "$2b$10$nhioaTzsDZ2hiIskB0Pj9eFuSGLAJn5oX3QgU.DSPdTvyKrWNG/.K",
+    "isDoctor": "1",
+    "createdAt": "2024-06-10T04:48:04.000Z",
+    "updatedAt": "2024-06-10T04:48:04.000Z"
+  },
+  "5c2e2b88-980a-45d8-9a7c-6d403809a3ba": {
+    "id": "5c2e2b88-980a-45d8-9a7c-6d403809a3ba",
+    "email": "soumya@gmail.com",
+    "password": "$2b$10$DMdq2ggWpbIgQIVEVPusYOEN978i8b1NPR1x7qhX4SSkXqSxud3gG",
+    "isDoctor": "0",
+    "createdAt": "2024-06-09T09:31:22.000Z",
+    "updatedAt": "2024-06-09T09:31:22.000Z"
+  }
+}

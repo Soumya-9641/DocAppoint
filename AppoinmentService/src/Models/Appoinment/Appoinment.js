@@ -23,10 +23,10 @@ module.exports = (sequelize, DataTypes) => {
         //     type: DataTypes.UUID,
         //     allowNull: false,
         //   },
-          appointmentTime: {
-            type: DataTypes.STRING,
-            allowNull: false,
-          },
+          // appointmentTime: {
+          //   type: DataTypes.STRING,
+          //   allowNull: false,
+          // },
           status: {
             type: DataTypes.ENUM('pending', 'approved', 'rejected'),
             defaultValue: 'pending',
@@ -43,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
           },
+          date:{
+            type: DataTypes.STRING,
+            allowNull:false
+          }
       },
       {
         tableName: "appoinments",

@@ -24,10 +24,10 @@ module.exports = (sequelize, DataTypes) => {
       }
     );
     Category.associate = function (models) {
-      Category.hasOne(models.Doctor, {
-        foreignKey: "doctorId",
-        as: "doctor",
-      });
+      // Category.hasOne(models.Doctor, {
+      //   foreignKey: "doctorId",
+      //   as: "doctor",
+      // });
       Category.hasMany(models.Appoinment, {
         foreignKey: "categoryId",
         as: "appoinments",

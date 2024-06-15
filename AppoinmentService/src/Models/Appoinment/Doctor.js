@@ -19,9 +19,13 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.FLOAT,
             allowNull: false,
           },
+          rank:{
+            type: DataTypes.FLOAT,
+            defaultValue: 0
+          }
       },
       {
-        tableName: "reviews",
+        tableName: "doctors",
       }
     );
     

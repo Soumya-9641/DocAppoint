@@ -1,0 +1,156 @@
+export const getSubjectsByType = async (
+    type: string
+  ): Promise<GET_SUBJECTS_RESPONSE> => {
+    let typeQuery = {};
+    switch (type?.toLowerCase()) {
+      case "domain":
+        typeQuery = {
+          [Op.or]: [
+            { list_type: process.env.LIST_TYPE_B1 },
+            { list_type: process.env.LIST_TYPE_B2 },
+          ],
+        };
+        break;
+      case "language":
+        typeQuery = {
+          [Op.or]: [
+            { list_type: process.env.LIST_TYPE_A1 },
+            { list_type: process.env.LIST_TYPE_A2 },
+          ],
+        };
+        break;
+      case "general":
+        typeQuery = { list_type: process.env.LIST_TYPE_GENERAL };
+  
+      // console.log(typeQuery);
+    }
+    const data = await Subject.findAll({ where: typeQuery });
+    if (!data) {
+      throw new BadRequestError("Subject not fetched");
+    } else {
+      return data;
+    }
+  };
+  
+  export const addSubject = async (
+    list_type: string,
+    name: string,
+    totalParticipants: number
+  ): Promise<ADD_SUBJECT_RESPONSE> => {
+    const data = await Subject.create({ list_type, name, totalParticipants });
+    if (!data) {
+      throw new BadRequestError("Subject not added");
+    } else {
+      return data;
+    }
+  };
+  
+  export const updateSubject = async (
+    list_type: string,
+    name: string,
+    totalParticipants: number,
+    id: number,
+    tag: string
+  ): Promise<UPDATE_SUBJECT_RESPONSE> => {
+    const data = await Subject.update(
+      { list_type, name, totalParticipants, tag },
+      { where: { id } }
+    );
+    if (!data) {
+      throw new BadRequestError("Subject not updated");
+    } else {
+      return data;
+    }
+  };
+  
+  export const updateSubjectSyllabusLink = async (
+    ids: number,
+    link: string
+  ): Promise<UPDATE_SUBJECT_SYLLABUSLINK_RESPONSE> => {
+    // console.log(ids, link);
+  
+    const data = await Subject.update(
+      { syallbus_link: link },
+      { where: { id: ids } }
+    );
+    if (!data) {
+      throw new BadRequestError("Subject not updated");
+    } else {
+      return data;
+    }
+  };
+  export const updateSubjectSyllabusLinkHindi = async (
+    ids: number,
+    link: string
+  ): Promise<UPDATE_SUBJECT_SYLLABUSLINK_HINDI_RESPONSE> => {
+    // console.log(ids, link);
+  
+    const data = await Subject.update(
+      { syallbus_link_hindi: link },
+      { where: { id: ids } }
+    );
+    if (!data) {
+      throw new BadRequestError("Subject not updated");
+    } else {
+      return data;
+    }
+  };
+  
+  export const updateVisibilityForMentorFeature = async (
+    id: number,
+    visibilityForMentorFeature: string
+  ): Promise<UPDATE_VISIBILITY_MENTOR_FEATURE_RESPONSE> => {
+    // console.log(id, visibilityForMentorFeature);
+    const data = await Subject.update(
+      { visibilityForMentorFeature },
+      { where: { id } }
+    );
+    if (!data) {
+      throw new BadRequestError("Subject not updated");
+    } else {
+      return data;
+    }
+  };
+  
+  export const updateSubjectImage = async (
+    id: number,
+    image: string
+  ): Promise<UPDATE_SUBJECT_IMAGE_RESPONSE> => {
+    const data = await Subject.update(
+      { image },
+      {
+        where: { id },
+        include: {
+          model: Batch,
+          as: "batches",
+        },
+      }
+    );
+    if (!data) {
+      throw new BadRequestError("Subject not updated");
+    } else {
+      return data;
+    }
+  };
+  
+  export const deleteSubject = async (
+    id: number
+  ): Promise<DELETE_SUBJECT_RESPONSE> => {
+    const data = await Subject.destroy({ where: { id } });
+    if (!data) {
+      throw new BadRequestError("Subject not deleted");
+    } else {
+      return data;
+    }
+  };
+  
+  export const getSubjects = async (): Promise<GET_SUBJECTS_RESPONSE> => {
+    const data = await Subject.findAll();
+    if (!data) {
+      throw new BadRequestError("Subject not fetched");
+    } else {
+      return data;
+    }
+  };
+  
+  

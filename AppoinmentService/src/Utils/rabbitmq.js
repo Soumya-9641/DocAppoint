@@ -22,11 +22,23 @@ async function consumeQueue(queue, callback) {
   await channel.assertQueue(queue, { durable: true });
   channel.consume(queue, (message) => {
     if (message !== null) {
+      console.log("call here")
       callback(message.content.toString());
       channel.ack(message);
+
     }
   });
   console.log(`Consuming messages from queue ${queue}`);
 }
 
-module.exports = { connectRabbitMQ, consumeQueue };
+  
+async function publishToQueue(queue, message) {
+  if (!channel) {
+    await connectRabbitMQ();
+  }
+  await channel.assertQueue(queue, { durable: true });
+  channel.sendToQueue(queue, Buffer.from(message), { persistent: true });
+  console.log("data send successfully")
+}
+
+module.exports = { connectRabbitMQ, consumeQueue,publishToQueue };

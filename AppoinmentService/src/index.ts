@@ -4,56 +4,43 @@ import "express-async-errors";
 import cookieSession from "cookie-session";
 var cors = require("cors");
 var bodyParser = require('body-parser')
-
-
 import db from "./Models";
 import handleRouter from "./Apis";
 import dotenv from "dotenv";
-//const user= require("./Apis/user/user.controller")
+const cron = require('node-cron');
+const axios = require('axios');
 dotenv.config();
-// const swaggerUi = require("swagger-ui-express");
-// const swaggerDocument = require("./swagger.json");
-
 const port = process.env.PORT || 9001;
 const app = express();
-//app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.urlencoded())
 
+
+app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
-
 app.use(cors());
-//app.use("/user",user);
-
-
-//app.use(json({ limit: "10mb" }));
 app.use(
   cookieSession({
     signed: false,
     secure: false,
   })
 );
-// app.use("/",(req,res)=>{
-//     res.send("appoinment service in this port")
-// })
+
 app.use("/api",handleRouter);
 app.use("/",(req,res)=>{
     res.send("appoinment service in this port")
 })
-// app.use(
-//   "/api/api-docs",
-//   swaggerUi.serve,
-//   swaggerUi.setup(swaggerDocument, {
-//     swaggerOptions: { persistAuthorization: true },
-//   })
-// );
+
+// cron.schedule('* * * * *', async () => {
+//   try {
+//     const response = await axios.get('http://localhost:9001/api/profile/doctorRank');
+     
+//       // If the API returns any data
+//   } catch (error) {
+//       console.error('Failed to update doctor ranks:');
+//   }
+// });
+
 const start = async () => {
-    // if (!process.env.JWT_KEY) {
-    //   throw new Error("JWT_KEY must be defined ");
-    // }
-    // if (!process.env.rabbitMQ_HOST_URL) {
-    //   throw new Error("rabbitMQ_HOST_URL must be defined");
-    // }
   
     db.sequelize
       .query("SET FOREIGN_KEY_CHECKS = 0", { raw: true })
@@ -70,13 +57,9 @@ const start = async () => {
           for (const k of keys)
             await db.sequelize.query(`ALTER TABLE ${t} DROP INDEX ${k}`);
         }
-        db.sequelize.sync({ force: true }).then(async () => {
-          
+        db.sequelize.sync({ alter:true}).then(async () => {
           app.listen(port, async () => {
-           
             console.log("listening", port);
-  
-            // calculateNormalization(18, 175);
           });
         });
       });

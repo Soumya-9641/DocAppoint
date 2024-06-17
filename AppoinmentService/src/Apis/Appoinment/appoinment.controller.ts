@@ -75,9 +75,12 @@ router.get("/getAppoinment",isAuthenticated,async (
     }
 })
 
-router.put("/updateAppoinment",async(req:Request,res:Response)=>{
+router.put("/updateAppoinment/:id/status",async(req:Request,res:Response)=>{
+    console.log("hello")
     try{
+       
         const appointmentId = req.params.id;
+        console.log(appointmentId)
         const id= parseInt(appointmentId)
         const { status } = req.body;
         const response = await updateAppoinment(id,status)

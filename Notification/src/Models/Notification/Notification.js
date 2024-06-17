@@ -1,38 +1,40 @@
+
+  
+
 module.exports = (sequelize, DataTypes) => {
-    const Notification = sequelize.define('Notification', {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+    const Notification = sequelize.define(
+      "Notification",
+      {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: DataTypes.INTEGER,
+          },
+       
+          patientId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+          },
+          appointmentId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+          },
       },
-      patientId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      appointmentId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-    //   status: {
-    //     type: DataTypes.STRING,
-    //     allowNull: false,
-    //   },
-    //   messageId: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: false,
-    //     references: {
-    //       model: 'Messages',
-    //       key: 'id',
-    //     },
-    //   },
-    });
+      {
+        tableName: "notifications",
+      }
+    );
   
-    Notification.associate = (models) => {
+    Notification.associate = function (models) {
+      // SectionWiseResult.belongsTo(models.Document, { foreignKey: "docId",   as: "docs" });
       Notification.hasMany(models.Message, {
-        foreignKey: 'messageId',
-        as: 'messages',
+        foreignKey: "messageId",
+        as: "messages",
       });
-    };
+      
+     
   
+    };
     return Notification;
   };

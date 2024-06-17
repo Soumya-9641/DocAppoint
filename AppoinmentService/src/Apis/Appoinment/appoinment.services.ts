@@ -1,5 +1,5 @@
 const {Appoinment,User,Doctor,Patient} = require("../../Models/")
-
+const {publishToQueue} = require("../../Utils/rabbitmq")
 export const makeAppoinment = async(data:any)=>{
     try{
 
@@ -58,4 +58,59 @@ export const getAppoinment= async(doctorId:any)=>{
         console.log(err);
         return "something wnet wrong in service function"
     }
+}
+
+export const updateAppoinment=async (appointmentId:number,status:string)=>{
+        try{
+            const appointment = await Appoinment.findByPk(appointmentId, {
+                include: [
+                  { 
+                    model: Patient,
+                     as: 'patient',
+                     include: [
+                        {
+                          model: User,
+                          as: 'userdetails'
+                        }
+                      ] 
+                },
+                  {
+                     model: Doctor, 
+                     as: 'doctor',
+                     include: [
+                        {
+                          model: User,
+                          as: 'userdetails'
+                        }
+                      ]
+                     },
+                ],
+              });
+              if (!appointment) {
+                return  'Appointment not found'
+              }
+          
+              appointment.status = status;
+              await appointment.save();
+          
+              // Send notification message to RabbitMQ
+              const message = {
+                appointmentId: appointment.id,
+                patientId: appointment.patient.id,
+                doctorId: appointment.doctor.id,
+                status,
+                time: appointment.slot,
+                data:appointment.date,
+                patientEmail: appointment.patient.userdetails.email,
+                patientName: appointment.patient.userdetails.name,
+                doctorName: appointment.doctor.userdetails.name,
+              };
+              const endMessage= JSON.stringify(message);
+              console.log(message)
+              await publishToQueue('notification_updates', endMessage);
+              return appointment
+        }catch(err){
+            console.log(err);
+            return "something went wrong in service function"
+        }
 }

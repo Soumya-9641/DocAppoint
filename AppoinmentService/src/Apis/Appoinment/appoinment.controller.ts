@@ -2,7 +2,7 @@ import express, { Response, Request } from "express";
 const router = express.Router();
 const isAuthenticated  =require("../../../../isAuthenticated.ts")
 import getUserById  from "../../event/listner";
-import {makeAppoinment,getAppoinment} from "./appoinment.services"
+import {makeAppoinment,getAppoinment,updateAppoinment} from "./appoinment.services"
 const {publishToQueue} = require("../../Utils/rabbitmq")
 router.get('/testing',async(req:Request,res:Response)=>{
     try{
@@ -72,6 +72,19 @@ router.get("/getAppoinment",isAuthenticated,async (
     }catch(err){
         console.log(err);
         res.status(500).json({message:"something went wrong"});
+    }
+})
+
+router.put("/updateAppoinment",async(req:Request,res:Response)=>{
+    try{
+        const appointmentId = req.params.id;
+        const id= parseInt(appointmentId)
+        const { status } = req.body;
+        const response = await updateAppoinment(id,status)
+        res.status(200).json(response)
+    }catch(err){
+        console.log(err);
+        res.status(500).json({message:"something went wrong"})
     }
 })
 export default router;

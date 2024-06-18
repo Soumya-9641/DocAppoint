@@ -1,119 +1,69 @@
-import express, { Express, Request, Response } from "express";
+import express from "express";
+import "express-async-errors";
+//import { json } from "body-parser";
+import cookieSession from "cookie-session";
+var cors = require("cors");
+var bodyParser = require('body-parser')
+import db from "./Models/";
+import handleRouter from "./Apis";
 import dotenv from "dotenv";
-const multer = require('multer');
+const cron = require('node-cron');
+const axios = require('axios');
 dotenv.config();
+const port = process.env.PORT || 9004;
+const app = express();
 
-import { createWorker } from "tesseract.js";
-//const upload = multer({ dest: 'uploads/' });
-const app: Express = express();
-const port = process.env.PORT || 9002;
 
-const Tesseract = require('tesseract.js');
-const cv = require('opencv.js');
-const fs = require('fs');
-const path = require('path');
-import { removeFile } from './Utils/removeFile';
-const storage = multer.diskStorage({
-    destination: function (req: any, file: any, cb: (arg0: null, arg1: string) => void) {
-      cb(null, 'uploads/')
-    },
-    filename: function (_req: any, file: { fieldname: string; originalname: string; }, cb: (arg0: null, arg1: string) => void) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
-    }
+app.use(bodyParser.urlencoded({ extended: true }))
+// parse application/json
+app.use(bodyParser.json())
+app.use(cors());
+app.use(
+  cookieSession({
+    signed: false,
+    secure: false,
+  })
+);
+
+app.use("/api",handleRouter);
+app.use("/",(req,res)=>{
+    res.send("appoinment service in this port")
 })
-const upload = multer({ dest: 'uploads/', storage });
-app.get("/", (req: Request, res: Response) => {
-  res.send("Express + TypeScript Server");
-});
 
+// cron.schedule('* * * * *', async () => {
+//   try {
+//     const response = await axios.get('http://localhost:9001/api/profile/doctorRank');
+     
+//       // If the API returns any data
+//   } catch (error) {
+//       console.error('Failed to update doctor ranks:');
+//   }
+// });
 
-app.post('/upload', upload.single('prescription'), async (req, res) => {
-    //@ts-ignore
-    if (!req.file) {
-        res.status(400).json({
-            message: "No file sent"
-        })
-    }
-    else{
-        try {
-            //@ts-ignore
-            const worker = createWorker({
-                logger: m => console.log(m)
-              });
-               
-              (async () => {
-                await worker.load();
-                await worker.loadLanguage('eng');
-                await worker.initialize('eng');
-                const { data: { text } } = await worker.recognize('https://basicmedicalkey.com/wp-content/uploads/2016/06/image00565-1.jpeg');
-                console.log(text);
-                await worker.terminate();
-                res.json(text)
-              })();
-            
-    
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                message: "An unknown error occurred"
-            })
+const start = async () => {
+  
+    db.sequelize
+      .query("SET FOREIGN_KEY_CHECKS = 0", { raw: true })
+      .then(async function () {
+        const rawTables = await db.sequelize.query("SHOW TABLES");
+        const tables = rawTables[0].map(
+          (i: any) => i[Object.keys(rawTables[0][0])[0]]
+        );
+        for (const t of tables) {
+          const rawKeys = await db.sequelize.query(`SHOW INDEX FROM ${t}`);
+          const keys = rawKeys[0]
+            .map((i: any) => i["Key_name"])
+            .filter((i: any) => i.match(/[a-zA-Z]+_\d+/));
+          for (const k of keys)
+            await db.sequelize.query(`ALTER TABLE ${t} DROP INDEX ${k}`);
         }
-    }
-  });
-
-  function extractMedicineNames(text:any) {
-    // This is a placeholder function. In a real application,
-    // you would use an NLP library or service to extract medicine names.
-    const medicines = ['Paracetamol', 'Ibuprofen', 'Amoxicillin']; // Example medicines
-    const foundMedicines = medicines.filter((medicine) =>
-      text.includes(medicine)
-    );
-    return foundMedicines;
-  }
-
-
-
-app.post('/api/upload', async (req, res) => {
-  try {
-    //@ts-ignore
-   // const imagePath = path.join(__dirname, req.file.path);
-   const imagePath = "https://c.ndtvimg.com/2022-09/2tcj87po_doctor-neat-prescription-650_625x300_28_September_22.jpg";
-    preprocessImage(imagePath);
-
-    // Perform OCR using Tesseract.js
-    const { data: { text } } = await Tesseract.recognize(imagePath, 'eng', { logger: (m: any) => console.log(m) });
-
-
-    const lines = text.split('\n');
-    const medicines: any[] = [];
-
-    lines.forEach((line: string) => {
-      const words = line.split(' ');
-      words.forEach(word => {
-    
-          medicines.push(word);
-        
+        db.sequelize.sync({ alter:true}).then(async () => {
+          app.listen(port, async () => {
+            console.log("listening", port);
+          });
+        });
       });
-    });
-    fs.unlinkSync(imagePath);
-
-    res.status(200).json({ medicines });
-  } catch (error) {
-    console.error('Error processing the prescription:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-
-const preprocessImage = (imagePath: any) => {
-  let src = cv.imread(imagePath);
-  cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
-  cv.GaussianBlur(src, src, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
-  cv.threshold(src, src, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
-  cv.imwrite(imagePath, src);
-  src.delete();
-};
-
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
-});
+  };
+  
+  start();
+  
